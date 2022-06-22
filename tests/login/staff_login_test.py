@@ -1,3 +1,4 @@
+from lib2to3.pgen2 import driver
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -11,7 +12,8 @@ class TestStaffLogin:
     Portal > Functional Tests > Login > Staff.
     """
 
-    def test_staff_can_login_to_viana_portal_ORC_T18(self):
+    def test_staff_can_login_to_viana_portal_ORC_T18(self, init_webdriver):
+
         """
         Objective: User should be able to login if both username and password are valid.
 
@@ -20,14 +22,22 @@ class TestStaffLogin:
         And the user clicks on the "Log In" button
         Then the user should login successfully
         """
-        pass
+        # Given the user is on the login page
+        driver: webdriver.Chrome = init_webdriver
+        wait = WebDriverWait(driver, timeout=20)
+        driver.get("https://staging.portal.internal.viana.ai/")
+        # When the user enters a valid username and password
+        username_field = driver.find_element(By.XPATH, '//*[@id="username"]')
+        password_field = driver.find_element(By.XPATH, '//*[@id="password"]')
 
-    def test_staff_can_access_the_end_user_terms_page_ORC_T15(self):
-        """
-        Objective: To be able to navigate to the end user terms page from the login page.
+        username_field.send_keys("ray+staff@meldcx.com")
+        password_field.send_keys("Test101@")
+        # And the user clicks on the "Log In" button
+        login_button = driver.find_element(By.XPATH, '//*[@id="kc-login"]')
+        login_button.click()
 
-        Given the user is on the login page
-        When the user clicks on the "End User Terms" link
-        Then the user should be redirected to the end user terms page
-        """
-        pass
+        wait.until(EC.url_contains("/dashboard"))
+        wait.until(EC.title_contains("Dashboard"))
+        # Then the user should login successfully
+        assert "Dashboard" in driver.title
+        assert "/dashboard" in driver.current_url
